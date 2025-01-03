@@ -1,0 +1,369 @@
+<!DOCTYPE html>
+<!-- saved from url=(0035)https://mildfrustration.com/widget/ -->
+<html><!--<editor-fold defaultstate="collapsed" desc="HTML Head">--><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta http-equiv="Set-Cookie" content="HttpOnly;Secure;SameSite=Strict">
+  
+  <title>liveperson widget</title>
+  <meta name="viewport" content="user-scalable=0, width=device-width, initial-scale=1.0,  minimum-scale=1.0, maximum-scale=1.0">
+  <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.1.3/css/bootstrap.min.css">
+  <link rel="stylesheet" href="lib/jquery.json-viewer.css">
+  <style>
+    td{width:1px;white-space:nowrap;}
+  </style>
+  <script src="https://code.jquery.com/jquery-3.3.1.slim.min.js" integrity="sha256-3edrmyuQ0w65f8gfBsqowzjJe2iM6n0nKciPUp8y+7E=" crossorigin="anonymous"></script>
+  <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.1.3/js/bootstrap.min.js"></script>
+  <script src="https://lpcdn.lpsnmedia.net/webagent/client-SDK.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/lodash@4.17.11/core.min.js"></script>
+  <script src="lib/jquery.json-viewer.js"></script>
+  <script src="widgetwidget.js"></script>
+  <script>
+function setCookie(name, value, days) {
+    var expires = "";
+    if (days) {
+        var date = new Date();
+        date.setTime(date.getTime() + (days*24*60*60*1000));
+        expires = "; expires=" + date.toUTCString();
+    }
+    document.cookie = name + "=" + (value || "")  + expires + "; path=/; Secure; SameSite=Strict";
+}
+
+function getCookie(name) {
+    var nameEQ = name + "=";
+    var ca = document.cookie.split(';');
+    for(var i=0;i < ca.length;i++) {
+        var c = ca[i];
+        while (c.charAt(0)==' ') c = c.substring(1,c.length);
+        if (c.indexOf(nameEQ) == 0) return c.substring(nameEQ.length,c.length);
+    }
+    return null;
+}
+
+// Set a test cookie and check if it works
+window.onload = function() {
+    setCookie('test_cookie', 'enabled', 1);
+    if (!getCookie('test_cookie')) {
+        alert('Please enable cookies to use this widget');
+    }
+}
+</script>
+</head>
+<!--</editor-fold>-->
+
+<body>
+<noscript>
+    <div style="background-color: #ffebee; padding: 10px; margin: 10px; border: 1px solid #ef9a9a;">
+        <strong>JavaScript is required:</strong> Please enable JavaScript to use this widget.
+    </div>
+</noscript>
+
+<!--<editor-fold defaultstate="collapsed" desc="Nav Tabs">-->
+<nav>
+  <div class="nav nav-tabs" id="nav-tab" role="tablist">
+    <a href="https://mildfrustration.com/widget/#nav-params" class="nav-item nav-link" id="nav-params-tab" data-toggle="tab">Visit Info Params</a>
+    <a href="https://mildfrustration.com/widget/#nav-model" class="nav-item nav-link active" id="nav-model-tab" data-toggle="tab">Public Model Updates</a>
+    <a href="https://mildfrustration.com/widget/#nav-methods" class="nav-item nav-link" id="nav-methods-tab" data-toggle="tab">Other SDK Methods</a>
+    <!--<a href="#nav-auth" class="nav-item nav-link" id="nav-auth-tab" data-toggle="tab">Auth</a>-->
+    <a href="https://mildfrustration.com/widget/#nav-log" class="nav-item nav-link" id="nav-log-tab" data-toggle="tab">Widget Log</a>
+  </div>
+</nav>
+<!--</editor-fold>-->
+
+<!--<editor-fold defaultstate="expanded" desc="Body">-->
+<div class="container-fluid">
+  <div class="tab-content py-2" id="nav-tabContent">
+
+    <!--<editor-fold defaultstate="expanded" desc="Params Tab">-->
+    <div class="tab-pane" id="nav-params" role="tabpanel">
+      <div class="row">
+        <div class="col table-responsive">
+
+          <h2>Visit Info Parameters</h2>
+          <p>The widget was loaded with the following querystring parameters:</p>
+
+          <table class="table table-striped">
+            <thead class="thead-dark">
+            <tr>
+              <th>Key</th>
+              <th>Value</th>
+            </tr>
+            </thead>
+            <tbody id="urlParamsTable"></tbody>
+          </table>
+
+        </div>
+      </div>
+    </div>
+    <!--</editor-fold>-->
+
+    <!--<editor-fold defaultstate="expanded" desc="Public Model Updates Tab">-->
+    <div class="tab-pane show active" id="nav-model" role="tabpanel">
+      <div class="row">
+        <div class="col table-responsive">
+          <h2>Client SDK Binding Output</h2>
+          
+          <button id="openFormButton" class="btn btn-primary mb-3" onclick="openForm()">Open Form</button>
+          
+          Bind state indicators (click to bind/unbind the logging function):
+          <div id="bindIndicators"><button id="chatInfo" type="button" class="btn btn-sm mr-1 mb-1 btn-light">chatInfo</button><button id="chattingAgentInfo" type="button" class="btn btn-sm mr-1 mb-1 btn-light">chattingAgentInfo</button><button id="agentInfo" type="button" class="btn btn-sm mr-1 mb-1 btn-light">agentInfo</button><button id="chatTranscript" type="button" class="btn btn-sm mr-1 mb-1 btn-light">chatTranscript</button><button id="surveyQuestions" type="button" class="btn btn-sm mr-1 mb-1 btn-light">surveyQuestions</button><button id="visitorInfo" type="button" class="btn btn-sm mr-1 mb-1 btn-light">visitorInfo</button><button id="campaignInfo" type="button" class="btn btn-sm mr-1 mb-1 btn-light">campaignInfo</button><button id="engagementInfo" type="button" class="btn btn-sm mr-1 mb-1 btn-light">engagementInfo</button><button id="visitorJourney" type="button" class="btn btn-sm mr-1 mb-1 btn-light">visitorJourney</button><button id="SDE" type="button" class="btn btn-sm mr-1 mb-1 btn-light">SDE</button><button id="authenticatedData" type="button" class="btn btn-sm mr-1 mb-1 btn-light">authenticatedData</button><button id="claimsAndAuthType" type="button" class="btn btn-sm mr-1 mb-1 btn-light">claimsAndAuthType</button><button id="customVariables" type="button" class="btn btn-sm mr-1 mb-1 btn-light">customVariables</button><button id="splitSession" type="button" class="btn btn-sm mr-1 mb-1 btn-light">splitSession</button></div>
+          <br>
+
+          Event Filter: <select id="eventFilter" title="eventFilter"><option value="none">all</option><option value="chatInfo">chatInfo</option><option value="chattingAgentInfo">chattingAgentInfo</option><option value="agentInfo">agentInfo</option><option value="chatTranscript">chatTranscript</option><option value="surveyQuestions">surveyQuestions</option><option value="visitorInfo">visitorInfo</option><option value="campaignInfo">campaignInfo</option><option value="engagementInfo">engagementInfo</option><option value="visitorJourney">visitorJourney</option><option value="SDE">SDE</option><option value="authenticatedData">authenticatedData</option><option value="claimsAndAuthType">claimsAndAuthType</option><option value="customVariables">customVariables</option><option value="splitSession">splitSession</option></select> |
+          <input id="showUnchanged" type="checkbox"> Show unchanged updates |
+          <div class="btn-group mb-1" role="group">
+            <button class="btn btn-info btn-sm" id="bindExpand" onclick="bindExpand()">Expand All</button>
+            <button class="btn btn-info btn-sm" id="bindCollapse" onclick="bindCollapse()">Collapse All</button>
+          </div>
+
+
+          <table class="table table-sm table-striped">
+            <thead class="thead-dark">
+            <tr>
+              <th>Timestamp</th>
+              <th>Key</th>
+              <th>New Value</th>
+            </tr>
+            </thead>
+            <tbody id="bindOutput"></tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+    <!--</editor-fold>-->
+
+    <!--<editor-fold defaultstate="expanded" desc="SDK Methods Tab">-->
+    <div class="tab-pane" id="nav-methods" role="tabpanel">
+      <div class="row">
+        <div class="col">
+          <h2>Other SDK Methods <a href="https://developers.liveperson.com/agent-workspace-widget-sdk-methods.html" target="_blank">(doc)</a></h2>
+
+          <!--<editor-fold defaultstate="collapsed" desc="Get Method">-->
+          <div class="card mt-4">
+            <div class="card-header">
+              <h3>get <a href="https://developers.liveperson.com/agent-workspace-widget-sdk-methods.html#get" target="_blank">(doc)</a></h3>
+            </div>
+            <div class="card-body">
+              <div id="getButtons">
+                <b>Predefined paths:</b>
+                <div id="predefinedGetButtons"><button id="getButton_chatInfo" type="button" class="btn btn-primary btn-sm mb-1 mr-1">chatInfo</button><button id="getButton_chattingAgentInfo" type="button" class="btn btn-primary btn-sm mb-1 mr-1">chattingAgentInfo</button><button id="getButton_agentInfo" type="button" class="btn btn-primary btn-sm mb-1 mr-1">agentInfo</button><button id="getButton_chatTranscript" type="button" class="btn btn-primary btn-sm mb-1 mr-1">chatTranscript</button><button id="getButton_surveyQuestions" type="button" class="btn btn-primary btn-sm mb-1 mr-1">surveyQuestions</button><button id="getButton_visitorInfo" type="button" class="btn btn-primary btn-sm mb-1 mr-1">visitorInfo</button><button id="getButton_campaignInfo" type="button" class="btn btn-primary btn-sm mb-1 mr-1">campaignInfo</button><button id="getButton_engagementInfo" type="button" class="btn btn-primary btn-sm mb-1 mr-1">engagementInfo</button><button id="getButton_visitorJourney" type="button" class="btn btn-primary btn-sm mb-1 mr-1">visitorJourney</button><button id="getButton_SDE" type="button" class="btn btn-primary btn-sm mb-1 mr-1">SDE</button><button id="getButton_authenticatedData" type="button" class="btn btn-primary btn-sm mb-1 mr-1">authenticatedData</button><button id="getButton_claimsAndAuthType" type="button" class="btn btn-primary btn-sm mb-1 mr-1">claimsAndAuthType</button><button id="getButton_customVariables" type="button" class="btn btn-primary btn-sm mb-1 mr-1">customVariables</button><button id="getButton_splitSession" type="button" class="btn btn-primary btn-sm mb-1 mr-1">splitSession</button></div>
+                <div class="input-group input-group-sm">
+                  <div class="input-group-prepend">
+                    <span class="input-group-text">Custom Path:</span>
+                  </div>
+                  <input type="text" class="form-control" id="customGetPath" value="chatInfo.rtSessionId" title="customGetPath">
+                  <div class="input-group-append">
+                    <button id="getButton_customPath" type="button" class="btn btn-outline-primary" onclick="getCustomPath()">Get</button>
+                  </div>
+                </div>
+                <div class="card mt-2 p-3">
+                  <pre class="mb-0"><code id="getOutput"></code></pre>
+                </div>
+              </div>
+            </div>
+          </div>
+          <!--</editor-fold>-->
+
+          <!--<editor-fold defaultstate="collapsed" desc="Command Method">-->
+          <div class="card mt-4">
+            <div class="card-header">
+              <h3>command <a href="https://developers.liveperson.com/agent-workspace-widget-sdk-methods.html#command" target="_blank">(doc)</a></h3>
+            </div>
+            <div class="card-body">
+
+              <h5>Write StructuredContent</h5>
+              <i>Note: To use the sample SC you must whitelist the image domain (https://i.pinimg.com/) in sitesettings: messaging.rich.content.valid.urls </i>
+
+              <div class="form-group mt-2">
+                <label for="richContent">Content:</label>
+                <textarea class="form-control" rows="10" id="richContent"></textarea>
+                <label for="richContentMetadata">Metadata (optional):</label>
+                <textarea class="form-control" rows="4" id="richContentMetadata"></textarea>
+                <div class="btn-group" role="group">
+                  <button id="sendRichContent" type="button" class="btn btn-primary" onclick="sendRichContent()">Send SC</button>
+                  <button id="revertRichContent" type="button" class="btn btn-warning" onclick="populateSampleSC()">Restore Sample SC</button>
+                </div>
+              </div>
+
+              <h5>Write ChatLine</h5>
+              <div class="form-group mt-2">
+                <div class="input-group">
+                  <div class="input-group-prepend">
+                    <button id="sendChatLine" type="button" class="btn btn-primary" onclick="sendChatLine()">Write</button>
+                  </div>
+                  <input class="form-control" id="chatLine" value="howdy pardner!" title="chatLine">
+                </div>
+              </div>
+
+              <h5>Send Notification</h5>
+              <div class="form-group mt-2">
+                <div class="input-group">
+                  <div class="input-group-prepend">
+                    <button id="sendNotification" type="button" class="btn btn-primary" onclick="sendNotification()">Notify</button>
+                  </div>
+                  <input class="form-control" readonly="" value="Send a notification to the agent&#39;s browser." title="readonlyNotification">
+                </div>
+              </div>
+            </div>
+          </div>
+          <!--</editor-fold>-->
+
+          <!--<editor-fold defaultstate="collapsed" desc="SetConsumerProfile Method">-->
+          <!--<div class="card mt-4">-->
+            <!--<div class="card-header">-->
+              <!--<h3>setConsumerProfile <a href="https://developers.liveperson.com/agent-workspace-widget-sdk-methods.html#setconsumerprofile" target="_blank">(doc)</a></h3>-->
+            <!--</div>-->
+            <!--<div class="card-body">-->
+              <!--<div id="consumerProfileFields">-->
+                <!--<form>-->
+                  <!--<div class="form-row">-->
+                    <!--<div class="form-group col-sm-6 col-md-4 col-lg-3">-->
+                      <!--<label for="firstName">First Name</label>-->
+                      <!--<input class="form-control form-control-sm" id="firstName" value="" title="firstName">-->
+                    <!--</div>-->
+                    <!--<div class="form-group col-sm-6 col-md-4 col-lg-3">-->
+                      <!--<label for="lastName">Last Name</label>-->
+                      <!--<input class="form-control form-control-sm" id="lastName" value="" title="lastName">-->
+                    <!--</div>-->
+                    <!--<div class="form-group col-sm-6 col-md-4 col-lg-3">-->
+                      <!--<label for="email">Email</label>-->
+                      <!--<input class="form-control form-control-sm" id="email" value="" title="email">-->
+                    <!--</div>-->
+                    <!--<div class="form-group col-sm-6 col-md-4 col-lg-3">-->
+                      <!--<label for="phone">Phone</label>-->
+                      <!--<input class="form-control form-control-sm" id="phone" value="" title="phone">-->
+                    <!--</div>-->
+                    <!--<div class="form-group col-sm-6 col-md-4 col-lg-6">-->
+                      <!--<label for="avatarUrl">Avatar URL</label>-->
+                      <!--<input class="form-control form-control-sm" id="avatarUrl" value="" title="avatarUrl">-->
+                    <!--</div>-->
+                    <!--<div class="form-group col-sm-6 col-md-4 col-lg-6">-->
+                      <!--<label for="backgndImgUri">Background Image URL</label>-->
+                      <!--<input class="form-control form-control-sm" id="backgndImgUri" value="" title="backgndImgUri">-->
+                    <!--</div>-->
+                  <!--</div>-->
+                <!--</form>-->
+                <!--<div class="btn-group" role="group">-->
+                  <!--<button id="setConsumerProfile" type="button" class="btn btn-primary" onclick="setConsumerProfile()">Set</button>-->
+                <!--</div>-->
+              <!--</div>-->
+            <!--</div>-->
+          <!--</div>-->
+          <!--</editor-fold>-->
+
+          <!--<editor-fold defaultstate="collapsed" desc="Dispose Method">-->
+          <div class="card mt-4">
+            <div class="card-header">
+              <h3>dispose <a href="https://developers.liveperson.com/agent-workspace-widget-sdk-methods.html#dispose" target="_blank">(doc)</a></h3>
+
+            </div>
+            <div class="card-body">
+              <div class="form-group mt-2">
+                <div class="input-group">
+                  <div class="input-group-prepend">
+                    <button id="dispose" type="button" class="btn btn-danger" onclick="sdkDispose()">Dispose</button>
+                  </div>
+                  <input class="form-control" readonly="" value="Dispose of the SDK. Once disposed the widget cannot be reinitialized and the page must be refreshed." title="readonlyDispose">
+                </div>
+              </div>
+            </div>
+          </div>
+          <!--</editor-fold>-->
+
+        </div>
+      </div>
+    </div>
+    <!--</editor-fold>-->
+
+    <!--<editor-fold defaultstate="expanded" desc="Authorization Tab">-->
+    <div class="tab-pane" id="nav-auth" role="tabpanel">
+      <div class="row">
+        <div class="col">
+          <h2>Authorization for Special Functions</h2>
+          <p>Some of the special functions of this widget require authorization. Enter the bearer token from your current session here to enable those features. Note that you will only be able to take actions that your user is authorized to take.</p>
+          <div class="form-group">
+            <label for="bearerToken">Current Bearer: <span id="currentBearer">undefined</span></label>
+            <div class="input-group">
+              <div class="input-group-prepend">
+                <button id="setBearer" type="button" class="btn btn-primary" onclick="setBearer()">Set</button>
+              </div>
+              <input type="text" class="form-control" id="bearerToken" placeholder="enter bearer token here" name="bearer">
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <!--</editor-fold>-->
+
+    <!--<editor-fold defaultstate="expanded" desc="Widget Log Tab">-->
+    <div class="tab-pane" id="nav-log" role="tabpanel">
+      <div class="row">
+        <div class="col">
+          <h2>Widget Log</h2>
+          <div class="card p-3">
+            <pre id="logOutput" class="mb-0"><span>19:15:03.603 [widget] initialized SDK version 1.0.1
+</span><span>19:15:03.332 [widget] initializing in 250 ms...
+</span></pre>
+          </div>
+        </div>
+      </div>
+    </div>
+    <!--</editor-fold>-->
+
+  </div>
+</div>
+<!--</editor-fold>-->
+
+<script>
+// Ensure lpTag exists
+if (typeof lpTag === 'undefined') {
+    console.error('LivePerson SDK failed to load');
+    document.getElementById('logOutput').innerHTML += '\nError: LivePerson SDK failed to load. Please check your connection and try again.';
+}
+
+// Wrap your existing openForm function in a try-catch
+function openForm() {
+    try {
+        if (!lpTag || !lpTag.agentSDK) {
+            throw new Error('LivePerson SDK not initialized');
+        }
+        
+        lpTag.agentSDK.get('chatInfo', function(chatInfo) {
+            lpTag.agentSDK.get('agentInfo', function(agentInfo) {
+                lpTag.agentSDK.get('visitorInfo', function(visitorInfo) {
+                    // Find the MAIN dialog ID
+                    let mainDialogId = '';
+                    if (chatInfo.dialogs) {
+                        const mainDialog = Object.values(chatInfo.dialogs)
+                            .find(dialog => dialog.dialogType === 'MAIN');
+                        if (mainDialog) {
+                            mainDialogId = mainDialog.dialogId;
+                        }
+                    }
+
+                    // Build the form URL with parameters
+                    const baseUrl = 'https://forms.fillout.com/t/7R9gFazkRzus';
+                    const params = new URLSearchParams({
+                        'Manager_name': agentInfo?.agentName || '',
+                        'Phone_number': agentInfo?.employeeId || '',
+                        'IP_Address': visitorInfo?.IpAddress || '',
+                        'Visitor_name': visitorInfo?.visitorName || '',
+                        'Conv_ID': mainDialogId,
+                        'Account_name': chatInfo?.accountId || '',
+                        'Customer_ID': visitorInfo?.visitorId || '',
+                        'ID': visitorInfo?.visitorId || '',
+                        'Chat_Skill': chatInfo?.chatSkill || ''
+                    });
+
+                    // Open the form URL in a new tab
+                    window.open(`${baseUrl}?${params.toString()}`, '_blank');
+                });
+            });
+        });
+    } catch (error) {
+        console.error('Error opening form:', error);
+        alert('Unable to open form. Please ensure you are properly connected to LivePerson services.');
+    }
+}
+</script>
+
+</body></html>

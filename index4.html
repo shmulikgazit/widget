@@ -1,0 +1,135 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <title>LP Form Widget</title>
+    <style>
+        .form-button {
+            padding: 8px 16px;
+            background-color: #0363b1;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-family: Arial, sans-serif;
+            font-size: 14px;
+            margin: 10px;
+            transition: background-color 0.2s;
+        }
+        .form-button:hover {
+            background-color: #0056a4;
+        }
+        .form-button:active {
+            background-color: #004d91;
+        }
+        .error-message {
+            color: #dc3545;
+            font-family: Arial, sans-serif;
+            font-size: 14px;
+            margin: 10px;
+            display: none;
+        }
+        #postForm {
+            display: none;
+        }
+    </style>
+</head>
+<body>
+    <button id="openFormButton" class="form-button" onclick="openForm()">Open Form</button>
+    <div id="errorMessage" class="error-message"></div>
+    
+    <!-- Hidden form for POST submission -->
+    <form id="postForm" method="POST" action="https://forms.fillout.com/t/7R9gFazkRzus" target="_blank">
+        <input type="hidden" name="Manager_name" id="Manager_name">
+        <input type="hidden" name="Phone_number" id="Phone_number">
+        <input type="hidden" name="IP_Address" id="IP_Address">
+        <input type="hidden" name="Visitor_name" id="Visitor_name">
+        <input type="hidden" name="Conv_ID" id="Conv_ID">
+        <input type="hidden" name="Account_name" id="Account_name">
+        <input type="hidden" name="Customer_ID" id="Customer_ID">
+        <input type="hidden" name="ID" id="ID">
+        <input type="hidden" name="Chat_Skill" id="Chat_Skill">
+    </form>
+
+    <script src="https://lpcdn.lpsnmedia.net/webagent/client-SDK.min.js"></script>
+    <script>
+        // Initialize the SDK
+        lpTag.agentSDK.init({});
+
+        // Function to show error message
+        function showError(message) {
+            const errorDiv = document.getElementById('errorMessage');
+            errorDiv.textContent = message;
+            errorDiv.style.display = 'block';
+            setTimeout(() => {
+                errorDiv.style.display = 'none';
+            }, 5000);
+        }
+
+        // Function to set form field values
+        function setFormField(fieldName, value) {
+            const field = document.getElementById(fieldName);
+            if (field) {
+                field.value = value || '';
+            }
+        }
+
+        // Main form opening function
+        function openForm() {
+            try {
+                if (!lpTag || !lpTag.agentSDK) {
+                    throw new Error('LivePerson SDK not initialized');
+                }
+
+                lpTag.agentSDK.get('chatInfo', function(chatInfo) {
+                    lpTag.agentSDK.get('agentInfo', function(agentInfo) {
+                        lpTag.agentSDK.get('visitorInfo', function(visitorInfo) {
+                            try {
+                                // Find the MAIN dialog ID
+                                let mainDialogId = '';
+                                if (chatInfo.dialogs) {
+                                    const mainDialog = Object.values(chatInfo.dialogs)
+                                        .find(dialog => dialog.dialogType === 'MAIN');
+                                    if (mainDialog) {
+                                        mainDialogId = mainDialog.dialogId;
+                                    }
+                                }
+
+                                // Set all form field values
+                                setFormField('Manager_name', agentInfo?.agentName);
+                                setFormField('Phone_number', agentInfo?.employeeId);
+                                setFormField('IP_Address', visitorInfo?.IpAddress);
+                                setFormField('Visitor_name', visitorInfo?.visitorName);
+                                setFormField('Conv_ID', mainDialogId);
+                                setFormField('Account_name', chatInfo?.accountId);
+                                setFormField('Customer_ID', visitorInfo?.visitorId);
+                                setFormField('ID', visitorInfo?.visitorId);
+                                setFormField('Chat_Skill', chatInfo?.chatSkill);
+
+                                // Submit the form
+                                document.getElementById('postForm').submit();
+                            } catch (error) {
+                                showError('Error processing conversation data');
+                                console.error('Error processing data:', error);
+                            }
+                        }, function(error) {
+                            showError('Error getting visitor info');
+                            console.error('Error getting visitor info:', error);
+                        });
+                    }, function(error) {
+                        showError('Error getting agent info');
+                        console.error('Error getting agent info:', error);
+                    });
+                }, function(error) {
+                    showError('Error getting chat info');
+                    console.error('Error getting chat info:', error);
+                });
+            } catch (error) {
+                showError('Unable to open form. Please ensure you are properly connected to LivePerson services.');
+                console.error('Error opening form:', error);
+            }
+        }
+    </script>
+</body>
+</html> 

@@ -1,0 +1,275 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <title>LP Form Widget</title>
+    <style>
+        .error-message {
+            color: #dc3545;
+            font-family: Arial, sans-serif;
+            font-size: 14px;
+            margin: 10px;
+            display: none;
+        }
+        .loading-message {
+            color: #666;
+            font-family: Arial, sans-serif;
+            font-size: 18px;
+            text-align: center;
+            direction: rtl;
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+        }
+    </style>
+</head>
+<body>
+    <div class="loading-message">מעלה ממשק משתמש</div>
+    <div id="errorMessage" class="error-message"></div>
+
+    <script src="https://lpcdn.lpsnmedia.net/webagent/client-SDK.min.js"></script>
+    <script>
+        // Initialize the SDK
+        lpTag.agentSDK.init({});
+
+        // Function to get visitor IP from chat transcript
+        function getVisitorIpFromTranscript(chatTranscript) {
+            if (!chatTranscript?.lines || !Array.isArray(chatTranscript.lines)) {
+                return '';
+            }
+
+            const visitorLine = chatTranscript.lines.find(line => 
+                line.by === 'Visitor' && 
+                line.clientProperties?.ipAddress
+            );
+
+            return visitorLine?.clientProperties?.ipAddress || '';
+        }
+
+        // Function to get country from IP
+        async function getCountryFromIP() {
+            try {
+                const response = await fetch('https://freeipapi.com/api/json');
+                const data = await response.json();
+                if (data.countryName) {
+                    return data.countryName;
+                } else {
+                    console.error('IP API error: No country name returned');
+                    return '';
+                }
+            } catch (error) {
+                console.error('Error fetching country:', error);
+                return '';
+            }
+        }
+
+        // Function to get visitor responses from chat transcript
+        function getVisitorResponses(chatTranscript, visitorName) {
+            if (!chatTranscript?.lines || !Array.isArray(chatTranscript.lines)) {
+                return { nickname: '', age: '' };
+            }
+
+            let nickname = '';
+            let age = '';
+            const nicknameQuestion = 'אנא רשמו שם או כינוי';
+            const ageQuestionWhatsapp = 'על מנת שאוכל להעניק לך מענה מותאם, אנא הקלד/י את גילך (ספרות בלבד)';
+
+            // Sort lines by time
+            const sortedLines = [...chatTranscript.lines].sort((a, b) => a.time - b.time);
+
+            // Loop through sorted lines to find questions and their answers
+            for (let i = 0; i < sortedLines.length - 1; i++) {
+                const currentLine = sortedLines[i];
+                const nextLine = sortedLines[i + 1];
+
+                // Check for nickname question and get response
+                if (currentLine.text === nicknameQuestion && 
+                    nextLine.by === visitorName) {
+                    nickname = nextLine.text || '';
+                    
+                    // After finding nickname, look for richContent age question
+                    for (let j = i + 1; j < sortedLines.length - 1; j++) {
+                        const potentialAgeQuestion = sortedLines[j];
+                        const potentialAgeAnswer = sortedLines[j + 1];
+                        
+                        if (potentialAgeQuestion.type === 'richContent' && 
+                            potentialAgeAnswer.by === visitorName) {
+                            age = potentialAgeAnswer.text || '';
+                            break;
+                        }
+                    }
+                }
+
+                // Check for WhatsApp age question and get response
+                if (currentLine.text === ageQuestionWhatsapp && 
+                    nextLine.by === visitorName) {
+                    age = nextLine.text || '';
+                }
+            }
+
+            return { nickname, age };
+        }
+
+        // Function to show error message
+        function showError(message) {
+            const errorDiv = document.getElementById('errorMessage');
+            errorDiv.textContent = message;
+            errorDiv.style.display = 'block';
+            setTimeout(() => {
+                errorDiv.style.display = 'none';
+            }, 5000);
+        }
+
+        // Function to get visitor phone
+        function getVisitorPhone(authenticatedData) {
+            if (!authenticatedData?.personalInfo?.contactInfo || 
+                !Array.isArray(authenticatedData.personalInfo.contactInfo) || 
+                authenticatedData.personalInfo.contactInfo.length === 0) {
+                return '';
+            }
+            
+            return authenticatedData.personalInfo.contactInfo[0].phone || '';
+        }
+
+        // Function to get report target based on age
+        function getReportTarget(age) {
+            if (!age) return '100';
+            
+            if (age === '10-13' || age === '14-17') {
+                return '105';
+            }
+            
+            const ageNum = parseInt(age);
+            if (!isNaN(ageNum) && ageNum < 18) {
+                return '105';
+            }
+            
+            return '100';
+        }
+
+        // Function to format Israel time
+        function formatIsraelTime(timestamp) {
+            if (!timestamp) return '';
+            
+            const date = new Date(timestamp);
+            
+            const formattedDateTime = new Intl.DateTimeFormat('he-IL', {
+                timeZone: 'Asia/Jerusalem',
+                year: 'numeric',
+                month: '2-digit',
+                day: '2-digit',
+                hour: '2-digit',
+                minute: '2-digit',
+                second: '2-digit',
+                hour12: false
+            }).format(date);
+
+            return formattedDateTime.replace(/,\s*/, ' ');
+        }
+
+        // Main function to handle form redirect
+        async function handleRedirect() {
+            try {
+                if (!lpTag || !lpTag.agentSDK) {
+                    throw new Error('LivePerson SDK not initialized');
+                }
+
+                const managerCountry = await getCountryFromIP();
+
+                lpTag.agentSDK.get('chatInfo', function(chatInfo) {
+                    lpTag.agentSDK.get('agentInfo', function(agentInfo) {
+                        lpTag.agentSDK.get('chattingAgentInfo', function(chattingAgentInfo) {
+                            lpTag.agentSDK.get('visitorInfo', function(visitorInfo) {
+                                lpTag.agentSDK.get('chatTranscript', function(chatTranscript) {
+                                    lpTag.agentSDK.get('authenticatedData', function(authenticatedData) {
+                                        lpTag.agentSDK.get('engagementInfo', function(engagementInfo) {
+                                            try {
+                                                let mainDialogId = '';
+                                                if (chatInfo.dialogs) {
+                                                    const mainDialog = Object.values(chatInfo.dialogs)
+                                                        .find(dialog => dialog.dialogType === 'MAIN');
+                                                    if (mainDialog) {
+                                                        mainDialogId = mainDialog.dialogId;
+                                                    }
+                                                }
+
+                                                const visitorIP = visitorInfo?.IpAddress || 
+                                                        getVisitorIpFromTranscript(chatTranscript) || 
+                                                        '';
+
+                                                const { nickname, age } = getVisitorResponses(chatTranscript, visitorInfo?.visitorName || '');
+
+                                                const baseUrl = 'https://forms.fillout.com/t/mbCJrqnXY7us';
+
+                                                const isWhatsApp = authenticatedData?.customerDetails?.customerId?.startsWith('whatsapp_');
+                                                const isWeb = engagementInfo?.engagementId ? true : false;
+                                                const channel = isWhatsApp ? 'whatsapp' : (isWeb ? 'web' : '');
+
+                                                const params = new URLSearchParams({
+                                                    'manager_name': agentInfo?.agentName || '',
+                                                    'manager_email': agentInfo?.agentEmail || '',
+                                                    'manager_phonenumber': agentInfo?.employeeId || '',
+                                                    'manager_country': managerCountry || '',
+                                                    'agent_name': chattingAgentInfo?.agentName || '',
+                                                    'conv_starttime': formatIsraelTime(chatInfo?.chatStartTime) || '',
+                                                    'conv_skill': chatInfo?.chatSkill || '',
+                                                    'convID': mainDialogId,
+                                                    'channel': channel,
+                                                    'visitor_name': visitorInfo?.visitorName || '',
+                                                    'visitor_nickname': nickname,
+                                                    'visitor_age': age,
+                                                    ...(channel === 'whatsapp' ? {
+                                                        'visitor_phonenumber': getVisitorPhone(authenticatedData)
+                                                    } : {
+                                                        'visitor_ip': visitorIP
+                                                    }),
+                                                    'report_target': getReportTarget(age)
+                                                });
+
+                                                // Redirect in the same iframe
+                                                window.location.href = `${baseUrl}?${params.toString()}`;
+                                            } catch (error) {
+                                                showError('Error processing conversation data');
+                                                console.error('Error processing data:', error);
+                                            }
+                                        }, function(error) {
+                                            showError('Error getting engagement info');
+                                            console.error('Error getting engagement info:', error);
+                                        });
+                                    }, function(error) {
+                                        showError('Error getting authenticated data');
+                                        console.error('Error getting authenticated data:', error);
+                                    });
+                                }, function(error) {
+                                    showError('Error getting chat transcript');
+                                    console.error('Error getting chat transcript:', error);
+                                });
+                            }, function(error) {
+                                showError('Error getting visitor info');
+                                console.error('Error getting visitor info:', error);
+                            });
+                        }, function(error) {
+                            showError('Error getting chatting agent info');
+                            console.error('Error getting chatting agent info:', error);
+                        });
+                    }, function(error) {
+                        showError('Error getting agent info');
+                        console.error('Error getting agent info:', error);
+                    });
+                }, function(error) {
+                    showError('Error getting chat info');
+                    console.error('Error getting chat info:', error);
+                });
+            } catch (error) {
+                showError('Unable to process redirect. Please ensure you are properly connected to LivePerson services.');
+                console.error('Error handling redirect:', error);
+            }
+        }
+
+        // Call handleRedirect when the page loads
+        window.onload = handleRedirect;
+    </script>
+</body>
+</html> 
